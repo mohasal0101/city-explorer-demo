@@ -68,3 +68,43 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+# City Explore
+### Author: Salah Mohammad Version: 1.0.0
+
+## Overview
+This application is a location search engine basically in which you can enter a city name and the city data such as name, latitude, longitude, map would appear.
+
+## Getting Started
+- create a react app
+- install axios
+- add .env file and put it in .gitignore
+- get access token from locationIQ
+- install bootstrap
+- write code and enjoy
+## Architecture
+- ReactJS
+- Bootstrap
+- Axios
+- LocationIQ
+- Dotenv
+## Change Log
+- 31-07-2022 11:00pm - Application now has a fully-functional search with a GET route for the location resource.
+
+### Team :
+- Salah Mohammad
+- Eman Riziq
+### Time Estimates
+Name of feature: creating an application using axios and env <br>
+
+Estimate of time needed to complete: 5<br>
+
+Start time: 1:00 PM<br>
+
+Finish time: 4:00pm<br>
+
+
+Actual time needed to complete: 3hrs (after code review)<br>
+
+[Netlify Deploy](https://62e92d0624c22306b72ef1c3--strong-narwhal-94c51b.netlify.app)<br>
+![image](https://user-images.githubusercontent.com/108029724/182408587-2e61746b-ca2b-4c94-9b61-6d6ac50fe6a2.png)
