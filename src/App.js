@@ -1,95 +1,126 @@
+import { Component } from 'react';
 import './App.css';
-import React, { Component } from 'react';
+import SearchForm from './components/SearchForm';
 import axios from 'axios';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import Map from './map';
-import Weather from './weather.js';
-
+import DisplayedInformation from './components/DisplayedInformation';
+import Map from './components/Map';
+import ErrorComp from './components/ErrorComp';
+import Weather from './components/weather';
+import Movie from './components/Movie';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      userInput: '',
-      allCity: {},
       display_name: '',
       latitude: '',
       longitude: '',
-      errorMessage: '',
-      displayError: false
+      map_src: '',
+      displayInfo: false,
+      errorMsg: '',
+      displayErr: false,
+      weather: [],
+      isWeather: false,
+      movies: [],
+      isMovie: false
     }
   }
 
-  getCityName = async (e) => {
+  displayLocation = async (e) => {
     e.preventDefault();
+    const searchQuery = e.target.searchQuery.value;
 
+    const url = `https://eu1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_LOCATION_KEY}&q=${searchQuery}&format=json`;
+
+    // console.log(url)
     try {
-
-      const cityData = await axios.get(`https://eu1.locationiq.com/v1/search?key=${process.env.REACT_APP_CITY_KEY}&q=${e.target.userCityInput.value}&format=json`)
-
-
-      console.log(e.target.userCityInput.value);
-      // console.log(cityData.data);
-
+      const city = await axios.get(url)
+      // console.log(city)
       this.setState({
-        userInput: e.target.userCityInput.value,
-        allCity: cityData.data[0],
-        display_name: cityData.data[0].display_name,
-        latitude: cityData.data[0].lat,
-        longitude: cityData.data[0].lon,
-        displayError: false
+        display_name: city.data[0].display_name,
+        latitude: city.data[0].lat,
+        longitude: city.data[0].lon,
+        displayInfo: true,
+        displayErr: false
+      })
+  
+      this.displayMap(city.data[0].lat, city.data[0].lon);
+      this.displayWeather(searchQuery, city.data[0].lat, city.data[0].lon);
+      this.fetchMovies(searchQuery);
 
-      });
-
-    } catch (error) {
-
+    } catch(error) {
+      console.log(error)
       this.setState({
-        displayError: true,
-        errorMessage: error.response.status + ' : ' + error.response.data.error,
-        display_name: ''
-
+        displayInfo: false,
+        displayErr: true,
+        errorMsg: error.response.status + ': ' + error.response.data.error
       })
     }
   }
 
+  displayMap = (lat, lon) => {
+    const mapSrc = `https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_LOCATION_KEY}&center=${lat},${lon}&zoom=18`;
+    console.log(mapSrc)
+    this.setState({
+      map_src: mapSrc
+    })
+  }
 
+  displayWeather = async (searchQuery, lat, lon) => {
+    try {
+      const weatherData = await axios.get(`https://city-explor-api.herokuapp.com/weather?searchQuery=${searchQuery}&lat=${lat}&lon=${lon}`);
+      this.setState({
+        isWeather: true,
+        weather: weatherData.data
+      })
+    } catch (error) {
+      this.setState({
+        errorMsg: error.response.status + ': ' + error.response.data.error,
+        displayErr: true,
+        isWeather: false,
+        displayInfo: false
+      })
+    }
+
+  }
+
+  fetchMovies = async (searchQuery) => {
+    try {
+      const movieData = await axios.get(`https://city-explor-api.herokuapp.com/movies?searchQuery=${searchQuery}`);
+      this.setState({
+        movies: movieData.data,
+        isMovie: true
+      })
+    } catch(error) {
+      this.setState({
+        isMovie: false
+      })
+    }
+  }
 
   render() {
     return (
       <div className="App">
-        <h1> {process.env.REACT_APP_TITLE}</h1>
-        <Form onSubmit={this.getCityName}>
-          <Form.Label htmlFor="text" id='userCityInput' >Enter City Name </Form.Label>
-          <Form.Control type="text" id="userCityInput" />
-          <Button variant="primary" type="submit">Explore! </Button>
-        </Form>
-
-        {this.state.displayError &&
+        <SearchForm submitHandler={this.displayLocation}/>
+        {this.state.displayInfo && 
           <>
-            
-              <h1>{this.state.errorMessage}</h1>
-              <p> The city you entered cannot be found, please check your spelling or try a different city! </p>
-            
-            
+            <DisplayedInformation cityInfo={this.state}/>
+            <Map mapSource={this.state.map_src}/>
           </>
         }
 
-        {this.state.display_name &&
-          <>
-            <p>City Name: {this.state.display_name}</p>
-            <p>City latitude: {this.state.latitude} </p>
-            <p>City longitude: {this.state.longitude}</p>
-
-            <Map
-              map_src={`https://maps.locationiq.com/v3/staticmap?key=${process.env.REACT_APP_CITY_KEY}&center=${this.state.latitude},${this.state.longitude}&zoom=10`}
-              city={this.state.display_name}
-            />
-            <Weather />
-          </>
+        {this.state.isWeather && 
+          <Weather weatherInformation={this.state.weather}/>
         }
 
+        {this.state.isMovie && 
+          <Movie movie={this.state.movies}/>
 
+        }
+
+        {this.state.displayErr && 
+          <ErrorComp error={this.state.errorMsg} />
+        }
       </div>
     );
   }
